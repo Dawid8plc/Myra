@@ -452,6 +452,8 @@ namespace MyraPad
 
 			_ui = new StudioWidget();
 
+            _ui.AssetDir.Selected += AssetDir_Selected;
+
 			_ui._menuFileNew.Selected += NewItemOnClicked;
 			_ui._menuFileOpen.Selected += OpenItemOnClicked;
 			_ui._menuFileReload.Selected += OnMenuFileReloadSelected;
@@ -491,7 +493,48 @@ namespace MyraPad
 			UpdateMenuFile();
 		}
 
-		private void _textBoxFilter_TextChanged(object sender, ValueChangedEventArgs<string> e)
+        private void AssetDir_Selected(object sender, EventArgs e)
+        {
+            var dlg = new FileDialog(FileDialogMode.ChooseFolder)
+            {
+
+            };
+
+            if (!string.IsNullOrEmpty(FilePath))
+            {
+                dlg.Folder = Path.GetDirectoryName(FilePath);
+            }
+            else if (!string.IsNullOrEmpty(_lastFolder))
+            {
+                dlg.Folder = _lastFolder;
+            }
+
+            dlg.Closed += (s, a) =>
+            {
+                if (!dlg.Result)
+                {
+                    return;
+                }
+
+                var filePath = dlg.FilePath;
+
+                var folder = filePath;
+                PropertyGridSettings.BasePath = folder;
+                PropertyGridSettings.AssetManager = new AssetManager(new FileAssetResolver(folder));
+                _lastFolder = folder;
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return;
+                }
+
+                //FilePath = filePath;
+            };
+
+            dlg.ShowModal(_desktop);
+        }
+
+        private void _textBoxFilter_TextChanged(object sender, ValueChangedEventArgs<string> e)
 		{
 			PropertyGrid.Filter = _ui._textBoxFilter.Text;
 			_ui._propertyGridPane.ResetScroll();
@@ -1368,7 +1411,7 @@ namespace MyraPad
 
 		private void AboutItemOnClicked(object sender, EventArgs eventArgs)
 		{
-			var messageBox = Dialog.CreateMessageBox("About", "MyraPad " + MyraEnvironment.Version);
+			var messageBox = Dialog.CreateMessageBox("About", "MyraPad for Starwarp Engine " + MyraEnvironment.Version);
 			messageBox.ShowModal(_desktop);
 		}
 

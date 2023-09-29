@@ -133,7 +133,10 @@ namespace MyraPad.UI
 			menuItem1.Items.Add(menuSeparator4);
 			menuItem1.Items.Add(_menuEditFormatSource);
 
-			_menuHelpAbout = new MenuItem();
+            AssetDir = new MenuItem();
+            AssetDir.Text = "Set Asset Directory";
+
+            _menuHelpAbout = new MenuItem();
 			_menuHelpAbout.Text = "&About";
 			_menuHelpAbout.Id = "_menuHelpAbout";
 
@@ -145,6 +148,7 @@ namespace MyraPad.UI
 			_mainMenu.Id = "_mainMenu";
 			_mainMenu.Items.Add(_menuFile);
 			_mainMenu.Items.Add(menuItem1);
+			_mainMenu.Items.Add(AssetDir);
 			_mainMenu.Items.Add(menuItem2);
 
 			var horizontalSeparator1 = new HorizontalSeparator();
@@ -260,6 +264,7 @@ namespace MyraPad.UI
 		}
 
 		
+		public MenuItem AssetDir;
 		public MenuItem _menuFileNew;
 		public MenuItem _menuFileOpen;
 		public MenuItem _menuFileReload;

@@ -296,7 +296,14 @@ namespace MyraPad
 							typeName = "TextureRegion";
 						}
 
-						if (property.PropertyType != typeof(IBrush))
+						if(property.PropertyType == typeof(SpriteFontBase))
+						{
+							string[] split = s.Split(':');
+							split[0] = split[0].Replace(@"\", "/");
+
+							strValue = $"StarwarpEngine.AssetManagement.Resources.Load<StarwarpEngine.AssetTypes.StarFont>(\"{split[0]}\").Font.GetFont({split[1]})";
+                        }
+						else if (property.PropertyType != typeof(IBrush))
 						{
 							strValue = "MyraEnvironment.DefaultAssetManager.Load<" + typeName + ">(\"" + s + "\")";
 						}
