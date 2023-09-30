@@ -104,6 +104,9 @@ namespace MyraPad
 		private readonly Dictionary<string, FontSystem> _fontCache = new Dictionary<string, FontSystem>();
 		private readonly Dictionary<string, Texture2D> _textureCache = new Dictionary<string, Texture2D>();
 
+		bool AssetMode = false;
+		string AssetPath = string.Empty;
+
 		public static Studio Instance
 		{
 			get
@@ -131,15 +134,21 @@ namespace MyraPad
 				if (!string.IsNullOrEmpty(_filePath))
 				{
 					var folder = Path.GetDirectoryName(_filePath);
-					PropertyGridSettings.BasePath = folder;
-					PropertyGridSettings.AssetManager = new AssetManager(new FileAssetResolver(folder));
+					if (!AssetMode)
+					{
+						PropertyGridSettings.BasePath = folder;
+						PropertyGridSettings.AssetManager = new AssetManager(new FileAssetResolver(folder));
+					}
 					_lastFolder = folder;
 				}
 				else
 				{
-					PropertyGridSettings.BasePath = string.Empty;
-					PropertyGridSettings.AssetManager = MyraEnvironment.DefaultAssetManager;
-					PropertyGridSettings.AssetManager.ClearCache();
+					if (!AssetMode)
+					{
+						PropertyGridSettings.BasePath = string.Empty;
+						PropertyGridSettings.AssetManager = MyraEnvironment.DefaultAssetManager;
+						PropertyGridSettings.AssetManager.ClearCache();
+					}
 				}
 
 				UpdateTitle();
@@ -256,10 +265,29 @@ namespace MyraPad
 			if (args.Length > 0)
 			{
 				string filePathArg = args[0];
-				if (!string.IsNullOrEmpty(filePathArg))
+
+				if (filePathArg == "-AssetDir" && args.Length == 3)
 				{
-					_state.EditedFile = filePathArg;
-					_state.LastFolder = Path.GetDirectoryName(filePathArg);
+					string assetdir = args[1];
+					string targetfile = args[2];
+
+					if (!string.IsNullOrEmpty(assetdir) && !string.IsNullOrEmpty(targetfile))
+					{
+						_state.EditedFile = targetfile;
+						_state.LastFolder = Path.GetDirectoryName(targetfile);
+
+						AssetPath = assetdir;
+
+                        AssetMode = true;
+					}
+                }
+				else
+				{
+					if (!string.IsNullOrEmpty(filePathArg))
+					{
+						_state.EditedFile = filePathArg;
+						_state.LastFolder = Path.GetDirectoryName(filePathArg);
+					}
 				}
 			}
 
@@ -323,7 +351,14 @@ namespace MyraPad
 
 #endif
 
-			if (_state != null && !string.IsNullOrEmpty(_state.EditedFile) && File.Exists(_state.EditedFile))
+            if (AssetMode)
+            {
+                PropertyGridSettings.BasePath = AssetPath;
+                PropertyGridSettings.AssetManager = new AssetManager(new FileAssetResolver(AssetPath));
+                _lastFolder = AssetPath;
+            }
+
+            if (_state != null && !string.IsNullOrEmpty(_state.EditedFile) && File.Exists(_state.EditedFile))
 			{
 				Load(_state.EditedFile);
 			}
@@ -523,12 +558,9 @@ namespace MyraPad
                 PropertyGridSettings.AssetManager = new AssetManager(new FileAssetResolver(folder));
                 _lastFolder = folder;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return;
-                }
+				AssetPath = folder;
 
-                //FilePath = filePath;
+                AssetMode = true;
             };
 
             dlg.ShowModal(_desktop);
@@ -1705,7 +1737,16 @@ namespace MyraPad
 
 		private void UpdateTitle()
 		{
-			var title = string.IsNullOrEmpty(_filePath) ? "MyraPad" : _filePath;
+			string title;
+
+			if (AssetMode)
+			{
+                title = AssetPath + " - " + _filePath;
+            }
+			else
+			{
+               title = string.IsNullOrEmpty(_filePath) ? "MyraPad" : _filePath;
+            }
 
 			if (_isDirty)
 			{

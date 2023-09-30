@@ -13,6 +13,7 @@ using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 using Myra;
 using Myra.Graphics2D;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Myra.MML;
 using Myra.Utility;
@@ -296,7 +297,11 @@ namespace MyraPad
 							typeName = "TextureRegion";
 						}
 
-						if(property.PropertyType == typeof(SpriteFontBase))
+						if(property.PropertyType == typeof(IImage))
+						{
+                            strValue = $"new TextureRegion(StarwarpEngine.AssetManagement.Resources.Load<StarwarpEngine.AssetTypes.StarTexture2D>(\"{s}\").Texture)";
+                        }
+                        else if(property.PropertyType == typeof(SpriteFontBase))
 						{
 							string[] split = s.Split(':');
 							split[0] = split[0].Replace(@"\", "/");
